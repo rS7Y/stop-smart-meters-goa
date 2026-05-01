@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostList from '../components/PostList.astro';
+import { getCollection } from 'astro:content';
+import { url } from '../utils/url';
+
+// Get all blog posts and sort them by date
+const allPosts = await getCollection('posts');
+const sortedPosts = allPosts.sort((a, b) => {
+  return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
+});
+
+const posts = sortedPosts.slice(0, 5).map(post => ({
+  ...post,
+  url: url(`/posts/${post.id}`),
+  frontmatter: post.data
+}));
+---
+
+<BaseLayout title="Stop Smart Meters Goa">
+  <div class="max-w-4xl mx-auto">
+    <section class="text-center py-[8vh]" transition:animate="fade">
+      <h1 class="text-6xl md:text-7xl mb-8 font-bold leading-tight">Stop Smart Meters Goa</h1>
+      <p class="text-2xl text-muted-foreground max-w-3xl mx-auto mb-6">
+        A citizens' petition in the public interest — against the forcible installation of 7,50,000 RF prepaid smart electricity meters across Goan homes.
+      </p>
+      <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-14">
+        Anchored to the Electricity Act 2003, the Constitution of India, the <em>Puttaswamy</em> judgment, the Precautionary Principle, and peer-reviewed scientific evidence on RF radiation harm.
+      </p>
+      <a href={url('/posts/comprehensive-review-of-smart-meters-in-goa')} class="btn-primary btn-lg tracking-wide no-underline hover:no-underline transform transition-all duration-300 hover:scale-105 hover:shadow-[0_3.5rem_5rem_rgba(21,21,21,0.3)] shadow-[0_3rem_4rem_rgba(21,21,21,0.25)] dark:bg-white dark:text-black dark:hover:bg-gray-100">
+        Read the Petition →
+      </a>
+    </section>
+
+    <section class="mx-auto" transition:animate="fade">
+      <h2 class="text-3xl mb-8 font-semibold text-center">Latest</h2>
+      <PostList posts={posts} showImages={false} showExcerpt={true} showSeparators={true} showTags={true}/>
+    </section>
+  </div>
+</BaseLayout>

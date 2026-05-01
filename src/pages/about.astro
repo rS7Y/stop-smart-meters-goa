@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { url } from '../utils/url';
+---
+
+<BaseLayout title="About">
+  <div class="max-w-3xl mx-auto">
+    <header class="mb-12 text-center" transition:animate="fade">
+      <h1 class="text-5xl mb-4">About this petition</h1>
+      <p class="text-xl text-muted-foreground">
+        A citizens' submission in the public interest — Goa, 2026
+      </p>
+    </header>
+
+    <div class="prose prose-lg dark:prose-invert max-w-none" transition:animate="fade">
+      <p>
+        The Electricity Department of Goa, through its private contractor M/s <strong>Digi Smart Network Pvt. Ltd.</strong> (Jaipur), has begun installing <strong>7,50,000 Radio-Frequency (RF) prepaid "smart" electricity meters</strong> across Goan homes at a project cost of approximately <strong>₹890.11 crore</strong> — escalated from an original tender of approximately ₹396 crore.
+      </p>
+
+      <p>
+        The rollout is being carried out without prior written consent of consumers, in the absence of homeowners, with threats of disconnection on refusal — and in direct contradiction of the Union Power Minister's own statement on the floor of the Lok Sabha (2 April 2026) that smart meters are "not mandatory" and "not being installed forcibly anywhere in the country."
+      </p>
+
+      <h2>What this site is</h2>
+
+      <p>
+        This site hosts the comprehensive citizens' petition — drafted in the public interest by <strong>Shri Darrell D'Souza</strong> and supplemented with peer-reviewed scientific evidence, Indian statutory authorities, judgments of the Hon'ble Supreme Court and various High Courts, and international precedents from comparable jurisdictions.
+      </p>
+
+      <p>
+        The petition is intended to be:
+      </p>
+
+      <ul>
+        <li>Shared with concerned citizens, residents' associations, and civil-society groups in Goa.</li>
+        <li>Submitted to MLAs and the Goa Legislative Assembly.</li>
+        <li>Used as the foundation of a Writ Petition (PIL) under Article 226 of the Constitution before the Hon'ble High Court of Bombay at Goa.</li>
+        <li>Filed alongside Right to Information applications to the Electricity Department, the Department of Telecommunications, the Central Electricity Authority, the Bureau of Indian Standards, and the Ministry of Power.</li>
+      </ul>
+
+      <h2>Why it matters</h2>
+
+      <p>
+        Smart meters are not "just meters." They are pulsed-RF emitters operating 24×7 inches from where Goan children sleep; they are remotely-actuated kill switches reachable from anywhere on Earth; they are high-resolution sensors capable, as peer-reviewed computer-science research has demonstrated, of disaggregating which appliances a household uses, when its members wake and sleep, and even <em>which film they are watching</em>.
+      </p>
+
+      <p>
+        The Karnataka High Court has already granted interim stay against a similar rollout in <em>Smt. Jayalakshmi M. v. State of Karnataka</em> (WP 12535/2025). The Hon'ble Supreme Court has, in <em>Harish Chand Tiwari v. Union of India / BSNL</em> (30 March 2017), already ordered deactivation of an RF source on Article 21 / precautionary-principle grounds. Lloyd's of London and Swiss Re refuse to insure RF-EMF illness claims. Saskatchewan recalled 105,000 smart meters after eight fires. French civil courts have ordered Linky meters physically removed from homes of medically-affected residents.
+      </p>
+
+      <p>
+        India's compulsory model in Goa is, on the international comparative record, an outlier — and it violates Sections 47(5), 53, 55, 61, and 171 of the Electricity Act, 2003, the <em>Puttaswamy</em> 9-judge bench judgment on privacy, the Digital Personal Data Protection Act, 2023, and the Precautionary Principle as part of Indian environmental jurisprudence (<em>Vellore Citizens</em>, <em>Nayudu</em>).
+      </p>
+
+      <h2>How to use this document</h2>
+
+      <p>
+        Read the <a href={url('/posts/comprehensive-review-of-smart-meters-in-goa')}>full petition</a>. Share it. Print it. Forward it to your MLA, your Panchayat, your residents' association, your local media. If you are a lawyer or a journalist who can help, please reach out. If you are a Goan whose meter has been forcibly replaced or threatened with disconnection, document everything — photographs, written threats, names of installation personnel, dates and times — and refuse consent in writing.
+      </p>
+
+      <p>
+        Every claim in this petition is sourced. Every citation is verifiable on Indian Kanoon, PubMed, the Lok Sabha digital library, or the official websites of the Government of India.
+      </p>
+
+      <hr />
+
+      <p>
+        <strong>This is a citizen-led effort. It is not affiliated with any political party.</strong> It is submitted in the public interest, by the people of Goa, for the people of Goa.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
