@@ -1,77 +1,35 @@
 ---
-// Static, no-backend comment section.
+// Real-time, no-backend, no-commenter-login comment section using Cusdis.
 //
-// HOW IT WORKS
-// ──────────────────────────────────────────────────────────────────────
-//   • Approved comments live in src/data/comments.json (just a JSON
-//     array of {name, date, text} entries). They're imported at build
-//     time and rendered as static HTML — fast, no runtime dependency.
-//   • Visitors submit via formsubmit.co (https://formsubmit.co), a free
-//     service that needs zero signup. The first time someone submits
-//     a comment, the admin gets a one-time confirmation email — click
-//     the link once and all future submissions go straight to the
-//     admin's inbox.
-//   • Admin reviews each submission. To publish: add a new entry to
-//     src/data/comments.json, commit, push. The site auto-redeploys
-//     within ~30 seconds and the comment appears.
+// SETUP (one time, ~60 seconds — admin only):
+//   1. Go to https://cusdis.com and sign up with email (free, no credit card)
+//   2. Click "New Site"
+//      • Name: Stop Smart Meters Goa
+//      • Domain: nosmartmetergoa.link
+//   3. Copy the "App ID" shown on the dashboard
+//   4. Paste it into CUSDIS_APP_ID below
+//   5. Commit and push — comments work in real time forever after
 //
-// Why this is better than Firebase here:
-//   – No external service to sign up for or wire keys into
-//   – Spam-resistant by default (every comment passes through a human)
-//   – Comments are version-controlled and auditable in the repo
-//   – Site stays a pure static site, fully portable
-// ──────────────────────────────────────────────────────────────────────
+// Once configured:
+//   • Visitors just type Name + Comment and click Post — no login needed
+//   • Comments appear instantly for everyone
+//   • You moderate (approve/delete) from the Cusdis dashboard if you want
+//   • Email notifications optional from the dashboard
+//
+// Until the App ID is filled in, the thread shows "comment section is being set up".
 
-import commentsData from '../data/comments.json';
-
-interface CommentEntry {
-  name: string;
-  date: string; // ISO date string
-  text: string;
-}
+const CUSDIS_APP_ID = '';
 
 interface Props {
   pageId: string;
-  // The admin email that receives new submissions via formsubmit.co.
-  // Substitute your own before going wide if needed.
-  submitTo?: string;
 }
 
-const { pageId, submitTo = 'rustyvz.v@gmail.com' } = Astro.props;
+const { pageId } = Astro.props;
 
-// Allow comments.json to either be a flat array (page-agnostic) or an
-// object keyed by pageId. This keeps it future-proof for multiple pages
-// while staying trivial in the simple case.
-const allComments = commentsData as unknown;
-let entries: CommentEntry[] = [];
-if (Array.isArray(allComments)) {
-  entries = allComments as CommentEntry[];
-} else if (allComments && typeof allComments === 'object') {
-  const byPage = allComments as Record<string, CommentEntry[]>;
-  entries = byPage[pageId] || [];
-}
-
-// Newest first
-entries = [...entries].sort((a, b) =>
-  new Date(b.date).valueOf() - new Date(a.date).valueOf()
-);
-
-const formAction = `https://formsubmit.co/${submitTo}`;
-const formId = `comment-form-${pageId}`;
-const statusId = `comment-status-${pageId}`;
-
-function formatDate(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return new Intl.DateTimeFormat('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }).format(d);
-  } catch {
-    return iso;
-  }
-}
+// Build a stable canonical URL so comments stay attached even if the page
+// is also reachable via www / github.io.
+const canonicalUrl = `https://nosmartmetergoa.link/`;
+const pageTitle = 'The Pros and Cons of Smart Meters — Stop Smart Meters Goa';
 ---
 
 <section
@@ -81,137 +39,29 @@ function formatDate(iso: string): string {
 >
   <h2 class="text-2xl sm:text-3xl font-bold mb-2">Add your voice</h2>
   <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">
-    No login required — just your name and your comment. Comments are reviewed before they appear publicly to keep the discussion useful and spam-free.
+    No login required — just your name and your comment. Comments appear instantly.
   </p>
 
-  <form
-    id={formId}
-    class="comment-form space-y-4 mb-10 p-5 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40"
-    action={formAction}
-    method="POST"
-    novalidate
-  >
-    <!-- formsubmit.co configuration: no captcha (we'll moderate),
-         redirect back to the page, friendly subject line. -->
-    <input type="hidden" name="_subject" value={`New comment on Stop Smart Meters Goa (${pageId})`} />
-    <input type="hidden" name="_captcha" value="false" />
-    <input type="hidden" name="_template" value="table" />
-    <input type="hidden" name="page_id" value={pageId} />
-    <!-- Honeypot for bots — humans never fill this. -->
-    <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" aria-hidden="true" />
-
-    <div>
-      <label class="block text-sm font-medium mb-1.5" for={`c-name-${pageId}`}>Your name</label>
-      <input
-        id={`c-name-${pageId}`}
-        name="name"
-        type="text"
-        maxlength="80"
-        required
-        placeholder="e.g. Maria Fernandes, Panaji"
-        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
-      />
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium mb-1.5" for={`c-text-${pageId}`}>Your comment</label>
-      <textarea
-        id={`c-text-${pageId}`}
-        name="comment"
-        rows="4"
-        maxlength="3000"
-        required
-        placeholder="Add your perspective, evidence, or concerns…"
-        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500 resize-y"
-      ></textarea>
-    </div>
-
-    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
-      <p class="text-xs text-gray-500 dark:text-gray-500 leading-relaxed">
-        Comments are usually published within 24 hours after review.
-      </p>
-      <button type="submit" class="comment-submit-btn">Post comment</button>
-    </div>
-    <p id={statusId} class="comment-status text-sm" role="status" aria-live="polite"></p>
-  </form>
-
-  <h3 class="text-lg sm:text-xl font-semibold mb-4">
-    {entries.length === 0 ? 'No comments yet' : `${entries.length} comment${entries.length === 1 ? '' : 's'}`}
-  </h3>
-
-  {entries.length === 0 ? (
-    <p class="text-gray-500 dark:text-gray-400">Be the first to share your perspective. After review, your comment will appear here.</p>
+  {CUSDIS_APP_ID ? (
+    <Fragment>
+      <div
+        id="cusdis_thread"
+        data-host="https://cusdis.com"
+        data-app-id={CUSDIS_APP_ID}
+        data-page-id={pageId}
+        data-page-url={canonicalUrl}
+        data-page-title={pageTitle}
+      ></div>
+      <script is:inline async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+    </Fragment>
   ) : (
-    <ol class="comment-list space-y-6" role="list">
-      {entries.map((c) => (
-        <li class="border-b border-gray-100 dark:border-gray-800 pb-5 last:border-0">
-          <div class="flex items-baseline gap-3 mb-1 flex-wrap">
-            <span class="font-semibold text-gray-900 dark:text-gray-100">{c.name}</span>
-            <time class="text-xs text-gray-400 dark:text-gray-500" datetime={c.date}>{formatDate(c.date)}</time>
-          </div>
-          <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.text}</p>
-        </li>
-      ))}
-    </ol>
+    <div class="p-5 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40">
+      <p class="text-sm text-gray-700 dark:text-gray-300">
+        💬 Comments are being set up. They will be open for posting very shortly.
+      </p>
+      <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
+        <em>Site admin: paste the Cusdis App ID in <code>src/components/Comments.astro</code> to activate this section. See setup instructions at the top of that file.</em>
+      </p>
+    </div>
   )}
 </section>
-
-<script is:inline define:vars={{ formId, statusId }}>
-  // Progressive enhancement: submit the form via fetch so the visitor
-  // gets a friendly inline "thanks" instead of being redirected away to
-  // formsubmit.co. If JS is disabled, the plain HTML form still works
-  // (formsubmit.co will show its own thank-you page).
-  function bindForm() {
-    const form = document.getElementById(formId);
-    const status = document.getElementById(statusId);
-    if (!form || form.dataset.bound === 'true') return;
-    form.dataset.bound = 'true';
-
-    const setStatus = (msg, kind) => {
-      if (!status) return;
-      status.textContent = msg || '';
-      status.classList.remove('text-green-600', 'dark:text-green-400', 'text-red-600', 'dark:text-red-400');
-      if (kind === 'ok') status.classList.add('text-green-600', 'dark:text-green-400');
-      else if (kind === 'err') status.classList.add('text-red-600', 'dark:text-red-400');
-    };
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const honey = form.querySelector('input[name="_honey"]');
-      if (honey && honey.value) return; // bot
-
-      const name = form.querySelector('input[name="name"]').value.trim();
-      const text = form.querySelector('textarea[name="comment"]').value.trim();
-      if (!name || !text) {
-        setStatus('Please enter both your name and a comment.', 'err');
-        return;
-      }
-
-      const submitBtn = form.querySelector('button[type="submit"]');
-      if (submitBtn) submitBtn.disabled = true;
-      setStatus('Sending…', null);
-
-      try {
-        const res = await fetch(form.action, {
-          method: 'POST',
-          headers: { Accept: 'application/json' },
-          body: new FormData(form),
-        });
-        if (res.ok) {
-          form.querySelector('textarea[name="comment"]').value = '';
-          setStatus("Thanks! Your comment has been received and will appear here after review.", 'ok');
-        } else {
-          setStatus('Sorry, we could not send your comment. Please try again in a minute.', 'err');
-        }
-      } catch (err) {
-        setStatus('Network error — please check your connection and try again.', 'err');
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-      }
-    });
-  }
-
-  bindForm();
-  document.addEventListener('astro:page-load', bindForm);
-  document.addEventListener('astro:after-swap', bindForm);
-</script>
