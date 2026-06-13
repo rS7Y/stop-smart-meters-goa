@@ -6,8 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
   output: 'static',
-  site: 'https://rS7Y.github.io',
-  base: '/stop-smart-meters-goa',
+  site: 'https://nosmartmetergoa.link',
   devToolbar: { enabled: false },
   // Enable built-in image optimization with specific settings
   image: {
