@@ -502,9 +502,13 @@
   color: #f3f4f6;
 }
 
-/* Cusdis comment thread - make it readable in both themes */
+/* Cusdis comment thread — give the iframe room to breathe so the
+   form + first few comments are visible without internal scrolling.
+   Cusdis auto-resizes via postMessage; min-height ensures it never
+   collapses below a usable size on first render. */
 #cusdis_thread iframe {
   width: 100% !important;
+  min-height: 720px !important;
   background-color: transparent !important;
   border-radius: 0.75rem;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -513,32 +517,3 @@
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Comment form submit button */
-.comment-submit-btn {
-  background-color: #111827;
-  color: white;
-  padding: 0.6rem 1.5rem;
-  border-radius: 9999px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
-  white-space: nowrap;
-}
-.comment-submit-btn:hover {
-  background-color: #000;
-  transform: translateY(-1px);
-}
-:where(.dark) .comment-submit-btn {
-  background-color: white;
-  color: black;
-}
-:where(.dark) .comment-submit-btn:hover {
-  background-color: #f3f4f6;
-}
-
-/* Hide the email-fallback form if Cusdis successfully renders an iframe */
-#cusdis_thread:has(iframe) + #email-comment-form {
-  display: none;
-}
