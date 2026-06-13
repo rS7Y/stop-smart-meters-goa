@@ -1,50 +1,423 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PostList from '../components/PostList.astro';
-import { getCollection } from 'astro:content';
+import Comments from '../components/Comments.astro';
 import { url } from '../utils/url';
 
-// Get all blog posts and sort them by date
-const allPosts = await getCollection('posts');
-const sortedPosts = allPosts.sort((a, b) => {
-  return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
-});
-
-const posts = sortedPosts.slice(0, 5).map(post => ({
-  ...post,
-  url: url(`/posts/${post.id}`),
-  frontmatter: post.data
-}));
+const pageTitle = "The Pros and Cons of Smart Meters";
+const pageDescription = "By Smart Meters Naka Committee, Goa. A citizens' assessment of what smart meters actually do — the health, privacy, security, and legal risks the Electricity Department of Goa is asking us to accept.";
+const shareUrl = "https://rs7y.github.io/stop-smart-meters-goa/";
+const shareText = "The Pros and Cons of Smart Meters — Smart Meters Naka Committee, Goa";
 ---
 
-<BaseLayout title="Stop Smart Meters Goa">
-  <div class="max-w-5xl mx-auto px-4">
-    <section class="pt-4 pb-12" transition:animate="fade">
+<BaseLayout title={pageTitle} description={pageDescription} image="/stop-smart-meters-goa/hero.jpg">
+  <article class="max-w-3xl mx-auto px-4 sm:px-6">
+
+    <!-- Hero -->
+    <section class="pt-2 pb-6 sm:pb-8" transition:animate="fade">
       <img
         src={url('/hero.jpg')}
         alt="Stop Smart Meters Goa — Protect Our Health. Protect Our Future. Say No To Smart Meters."
-        class="w-full h-auto rounded-2xl shadow-[0_2rem_4rem_rgba(0,0,0,0.18)] dark:shadow-[0_2rem_4rem_rgba(0,0,0,0.5)]"
+        class="w-full h-auto rounded-xl sm:rounded-2xl shadow-[0_1.5rem_3rem_rgba(0,0,0,0.18)] dark:shadow-[0_1.5rem_3rem_rgba(0,0,0,0.5)]"
         width="1717"
         height="916"
         fetchpriority="high"
       />
     </section>
 
-    <section class="text-center pb-[6vh] max-w-4xl mx-auto" transition:animate="fade">
-      <p class="text-2xl text-muted-foreground mb-6">
-        A citizens' petition in the public interest — against the forcible installation of 7,50,000 RF prepaid smart electricity meters across Goan homes.
-      </p>
-      <p class="text-lg text-gray-600 dark:text-gray-400 mb-10">
-        Anchored to the Electricity Act 2003, the Constitution of India, the <em>Puttaswamy</em> judgment, the Precautionary Principle, and peer-reviewed scientific evidence on RF radiation harm.
-      </p>
-      <a href={url('/posts/comprehensive-review-of-smart-meters-in-goa')} class="btn-primary btn-lg tracking-wide no-underline hover:no-underline transform transition-all duration-300 hover:scale-105 hover:shadow-[0_3.5rem_5rem_rgba(21,21,21,0.3)] shadow-[0_3rem_4rem_rgba(21,21,21,0.25)] dark:bg-white dark:text-black dark:hover:bg-gray-100">
-        Read the Petition →
-      </a>
+    <!-- Title block -->
+    <header class="pb-6 sm:pb-8 text-center" transition:animate="fade">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-3 sm:mb-4">The Pros and Cons of Smart Meters</h1>
+      <p class="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-2">By <em>Smart Meters Naka Committee, Goa</em></p>
+      <p class="text-sm text-gray-500 dark:text-gray-500">A living public document &nbsp;·&nbsp; New points added as the debate develops</p>
+    </header>
+
+    <!-- Share buttons (top) -->
+    <section class="pb-6 sm:pb-8" aria-label="Share this page">
+      <div class="flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-sm">
+        <span class="text-gray-500 dark:text-gray-500 mr-1 hidden sm:inline">Share:</span>
+        <a href={`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" class="share-btn share-whatsapp">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+          <span class="hidden sm:inline">WhatsApp</span>
+        </a>
+        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on X/Twitter" class="share-btn share-twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span class="hidden sm:inline">X</span>
+        </a>
+        <a href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Telegram" class="share-btn share-telegram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          <span class="hidden sm:inline">Telegram</span>
+        </a>
+        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" class="share-btn share-facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span class="hidden sm:inline">Facebook</span>
+        </a>
+        <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" class="share-btn share-linkedin">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.063 2.063 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          <span class="hidden sm:inline">LinkedIn</span>
+        </a>
+        <a href={`mailto:?subject=${encodeURIComponent(pageTitle)}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`} aria-label="Share by email" class="share-btn share-email">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          <span class="hidden sm:inline">Email</span>
+        </a>
+        <button id="copy-link-btn" type="button" aria-label="Copy link" class="share-btn share-copy">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span class="hidden sm:inline" id="copy-link-label">Copy link</span>
+        </button>
+      </div>
     </section>
 
-    <section class="max-w-4xl mx-auto" transition:animate="fade">
-      <h2 class="text-3xl mb-8 font-semibold text-center">Latest</h2>
-      <PostList posts={posts} showImages={false} showExcerpt={true} showSeparators={true} showTags={true}/>
+    <hr class="border-gray-200 dark:border-gray-800 mb-8 sm:mb-10" />
+
+    <!-- Main content -->
+    <div class="prose prose-base sm:prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24 prose-h2:mt-12 prose-h2:mb-4 prose-p:leading-relaxed prose-a:break-words" transition:animate="fade">
+
+      <p class="lead text-lg sm:text-xl">
+        The Union Power Minister Shri Manohar Lal Khattar, in answer to a Lok Sabha question on <strong>2 April 2026</strong>, stated that prepaid smart meters are <strong>voluntary</strong> — and as per the choice of the consumer. This is in line with <strong>Section 47(5) of the Electricity Act, 2003</strong>, which preserves the consumer's right to choose his meter.
+      </p>
+
+      <p>
+        Yet the Electricity Department of Goa (EDG) is claiming installation is <em>mandatory</em>, has issued a public notice to that effect, and is forcing meters onto consumers' walls — often in their absence, often against written refusal. This is illegal. It violates Section 47(5) of the Electricity Act, and contradicts the Union Power Minister's own statement.
+      </p>
+
+      <h2>Whose property is the meter — and what is being hidden</h2>
+
+      <p>
+        EDG argues that since most Goan consumers are not under the "own-your-meter" scheme, the old electricity meter is the property of the Department, and therefore they may replace it whenever they want, with whichever type of smart meter they want. But EDG is ignoring the fact that <strong>every consumer has the right under the Consumer Protection Act, 2019 to refuse a dangerous technology being placed in their premises</strong>, and to choose a safer approved electronic alternative.
+      </p>
+
+      <p>
+        Western-technology smart meters have been documented over the last 15 years to:
+      </p>
+
+      <ul>
+        <li>Cause brain damage and other health problems in people exposed long-term;</li>
+        <li>Reduce the population of pollinators — butterflies, bees and birds — leading to lower food production on farms and home gardens;</li>
+        <li>Catch fire and burn down homes (recall of 105,000 meters in Saskatchewan; multi-state US recalls).</li>
+      </ul>
+
+      <p>
+        The documentary <a href="https://youtube.com/watch?v=8ZTiT9ZSg3Q" target="_blank" rel="noopener">Take Back Your Power (2017)</a> details how citizens of the United States took their Electricity Department to court and proved that smart meters caused health issues, pollinator decline, and house fires — and won. Smart meters were removed.
+      </p>
+
+      <h2>No public consultation, no informed consent</h2>
+
+      <p>
+        Since these are new Western-technology devices being placed inside consumers' homes, <strong>why were no public consultations held before the rollout?</strong> The entire smart meter installation drive must be halted until this happens.
+      </p>
+
+      <p>
+        EDG's other defence is that "for now" they are installing meters in <em>postpaid</em> mode, since the central control station for smart meters in Goa is not yet ready. But the fact is that <strong>all smart meters are designed to work in prepaid mode only</strong>, and electricity departments across India have themselves stated that even temporarily-postpaid smart meters will eventually be switched to prepaid mode once the system is in place. Consumers have not agreed to prepaid smart meters.
+      </p>
+
+      <p>
+        In seminars, press conferences, interviews, and on social media, EDG officials claim they are "informing the public of the benefits" before installing. But under <strong>informed-consent law</strong>, one must state the positives <em>and</em> the negatives of the technology — which EDG is not doing. This is why better-informed activists — engineers and technicians from electrical, electronics, IT, computers, industrial and mechanical fields — are now publicly stating what the EDG is leaving out.
+      </p>
+
+      <h2>Point-by-point: what EDG says, and what the activists say</h2>
+
+      <h3>"Consumers will see hourly readings on their phones."</h3>
+      <p>
+        EDG: hourly consumption visible on a smartphone app will help consumers see how much electricity they use, and detect line tapping.
+        <br/>
+        <strong>Reality:</strong> consumers are not interested in hourly data, do not have time to check it daily, and can already detect line tapping from their monthly bill. All consumers want is an accurate monthly bill that matches their consumption.
+      </p>
+
+      <h3>"Time-of-Day pricing will reward off-peak consumption."</h3>
+      <p>
+        EDG: smart meters will charge less for daytime and more for evening time, encouraging consumers to shift load away from peak hours.
+        <br/>
+        <strong>Reality:</strong> when people come home tired after work and switch on the A/C, the geyser, the TV, the speakers — they should not be penalised for it. People cannot do without these basics; they will simply pay higher bills. This is a method of extracting more money, not reducing consumption. If EDG wants to penalise luxury use, it should do so at commercial premises — hotels, swimming pools, pubs, discos, public-event A/V, billboard lighting — and it already does, through commercial meter connections.
+      </p>
+
+      <h3>"Smart meters will detect distribution losses."</h3>
+      <p>
+        EDG: smart meters will measure losses at every stage.
+        <br/>
+        <strong>Reality:</strong> this can be done without installing a smart meter at every consumer's premise. EDG only needs to install its own smart meters at supply points and at distribution transformers — then tally the transformer reading against the total consumer billing fed by that transformer, monthly, within the existing billing system. No smart meter at the consumer's wall is required for loss detection.
+      </p>
+
+      <h3>"Fault detection will be automated."</h3>
+      <p>
+        EDG: when a supply line goes down, the smart meters system will immediately inform the control centre.
+        <br/>
+        <strong>Reality:</strong> consumers already call the local Electricity Division as soon as supply goes down. Often they tell the staff exactly what the fault is — a fallen tree on the line, a burst transformer, a downed pole. There is little advantage in automating something the public already does in real time.
+      </p>
+
+      <h3>"Smart meters will give a minute-to-minute load assessment."</h3>
+      <p>
+        EDG: this will allow supply to be adjusted in real time.
+        <br/>
+        <strong>Reality:</strong> the present system already gives a good idea of the load in various places. The real problem is that EDG has issued excess connections to new houses and multi-storey buildings — beyond their supply capacity. That is why transformers trip and blow up all across Goa. EDG should solve this longstanding problem <em>first</em>, before taking on the smart meters project.
+      </p>
+
+      <h2>Privacy — a sensor on your wall, not a meter</h2>
+
+      <p>
+        Smart Meter Naka activists have informed EDG, by letters and memoranda, that <strong>smart meters violate the privacy of individuals</strong>. They record granular, real-time data on electricity consumption — sufficient to reveal intimate details of a household's daily routine: when residents are away, what appliances are in use, sleep patterns, prayer timings, medical-device use.
+      </p>
+
+      <p>
+        Some reports indicate the SIM cards inside smart meters can be programmed to communicate with other AI devices in the home and track their usage. This is surveillance inside private homes — a violation of the <strong>Right to Privacy under Article 21 of the Indian Constitution</strong> (<em>Justice K.S. Puttaswamy v. Union of India</em>, 2017, 9-judge bench of the Supreme Court). This sensitive data could later be used for unauthorised surveillance or sold to third-party marketers. No technology installed in a private home, linked to tariffs, capable of remote control and behavioural data collection, can be imposed without full disclosure, safety assurance, and voluntary informed consent.
+      </p>
+
+      <h2>Cyber-security — and national security</h2>
+
+      <p>
+        Smart Meter Naka activists and consumers have repeatedly informed EDG that there is ample evidence that smart meters can be hacked, and the data inside them stolen and sold to third parties. EDG's reply is that "our Smart Meters App is safe." But it is well known that every digital system on the planet has been hacked — mobile phones, SIM-card devices, computer networks, corporate MIS systems, banking systems, government systems, AI systems, satellite systems, airplane control systems. Smart meters will be no exception. Consumers prefer to stay with the present electronic meter — which has no hackable app linked to it.
+      </p>
+
+      <p>
+        With the World War spreading to more countries over the last two years, threats of cyber attacks between countries — specifically aimed at engineering a "Power Grid Down" situation in target nations — have been ongoing. Why are we permitting the power-supply system of every home, every government facility, and every defence facility to be exposed to this vulnerability through smart meters? <strong>Smart meters could very soon become an instrument that threatens national security.</strong>
+      </p>
+
+      <h2>Pollinators, food, and the next generation</h2>
+
+      <p>
+        Since the launch of 5G, the population of bees and butterflies has reduced dramatically because of the constant EMF presence — and home-garden organic-food production has fallen as a consequence of reduced pollination. The meshed network of smart meters, operating on the 2G, 3G, 5G and ISM-band networks, will create an even denser blanket of EMF radiation, and further reduce the pollinator population — making it impossible to grow food on our plots.
+      </p>
+
+      <p>
+        There is a growing trend of Goans growing organic food in home gardens, because commercial produce is increasingly full of toxic chemicals damaging health. We cannot be so foolish as to destroy our own capacity to grow healthy food in a toxic world — for the sake of small conveniences of a new technology we did not ask for.
+      </p>
+
+      <h2>Health — the radiation we will all be living inside</h2>
+
+      <p>
+        Reports indicate that smart meters can be harmful to human health in the long run. Smart meters use a <strong>meshed network</strong> of neighbouring meters to relay signals to each other and finally to the main tower — at approximately <strong>130 pulses per minute, 24 hours a day</strong>, close to <strong>2,00,000 pulses per day</strong>. This creates a permanent maze of electromagnetic-field radiation all around us, which can negatively impact the human energy field and the human body over the long term.
+      </p>
+
+      <p>
+        <strong>Section 53 of the Electricity Act, 2003</strong> directs the Central Electricity Authority (CEA) to ensure that meters are safe for consumers. <strong>Article 47 of the Indian Constitution</strong> mandates the State to safeguard the health of its citizens. Until EDG can produce reports showing smart meters are safe, they should not be rolled out.
+      </p>
+
+      <p>
+        Replies from EDG to the Smart Meters Naka Team's RTI questions — asking whether they have any test reports proving smart meters and their meshed network are not harmful to humans, animals, plants, birds, butterflies, bees and other food pollinators — state that <strong>they do not have such test reports</strong>. This means they are implementing untested, experimental technologies in our homes — exactly the recipe behind the Covid-vaccine harms now recorded on the WHO's own <a href="https://www.vigiaccess.org" target="_blank" rel="noopener">vigiaccess.org</a> database. It is we the people who must remain wary and sceptical of these Western technologies — while EDG takes the simplistic position that "we have been given a project from the Centre, so it must be implemented." This careless stand is not acceptable to the electricity consumers of Goa.
+      </p>
+
+      <p>
+        In Goa, most electricity meters are fitted on the wall of the balcony. Quite often they are <strong>2-3 feet</strong> from the heads or bodies of people sitting in the balcony — a common morning and evening practice. Children spend a lot of time playing in balconies (they are not permitted to go outside unattended), and these radiations are <strong>more harmful to their softer skulls</strong>.
+      </p>
+
+      <h2>Cost-benefit — where is it?</h2>
+
+      <p>
+        The Revamped Distribution Sector Scheme (RDSS), launched by the Government of India, is only available to government-owned distribution companies — so private DISCOMs like BEST, Tata Power, Adani, Torrent, and MSEDCL cannot implement smart meters under it. The Electricity Department of Goa, being state-owned, can avail of the scheme.
+      </p>
+
+      <p>
+        But the purpose of RDSS is to bring transmission losses below 15%. <strong>Goa's transmission losses are already below 9%</strong>. There is absolutely no need to install smart meters in Goa — yet the State is being asked to incur <strong>₹890 crore of taxpayer money</strong>.
+      </p>
+
+      <p>
+        When consumers already have perfectly working electronic meters, why are these being replaced? At a time of global crisis — when fuel and electricity prices are rising due to the global war that is spreading, and Prime Minister Modi has advised Indians to reduce expenses and conserve energy — <strong>why are functioning electronic meters being destroyed?</strong> Approximately ₹300 crore of taxpayer money is being destroyed by dumping the present electronic meters. Add the ₹890 crore cost of the new smart meters, plus the environmental damage of disposing of the existing meters. Why has the cost-benefit analysis of this entire project not been made public?
+      </p>
+
+      <p>
+        Across India, thousands of consumers have received smart-meter bills <strong>double or even 10 times their earlier bills</strong>, with no increase in consumption. Why? Why are such defective meters being installed?
+      </p>
+
+      <h2>Fires, defective meters, and Section 55</h2>
+
+      <p>
+        There have been instances of smart meters catching fire and burning down houses. <strong>Section 55 of the Electricity Act, 2003</strong> states that the meter must be an approved meter that is <em>correct</em>. So why have the smart meters not been individually checked and approved by the Legal Metrology Department of India or the State Metrology Department for accuracy and safety? The bill spikes are precisely the result of inaccurate meters — which must therefore be treated as defective, and worse, as financial fraud by EDG against consumers. <strong>No private-company-certified smart meter is valid.</strong>
+      </p>
+
+      <p>
+        The "smart" in S.M.A.R.T. Meters stands for <em>Self-Monitoring, Analysis and Reporting Technology</em>. The technology is supposed to monitor itself. It does not. It has burned homes down. It bills wrongly. It cannot be approved as "correct" without independent State Metrology testing.
+      </p>
+
+      <h2>Remote disconnect — natural justice violated</h2>
+
+      <p>
+        The prepaid nature of smart meters allows for <strong>remote disconnection</strong> of power. This bypasses the consumer's fundamental right to prior notice and a formal hearing in case of payment dispute. Most non-payment issues now arise from faulty high bills generated by smart meters. <strong>Section 56 of the Electricity Act</strong> requires <strong>15 days' written notice</strong> before disconnection. The threat of cutting electricity — a fundamental right and an essential service under <strong>Article 21 of the Indian Constitution</strong> — without a grace period or human intervention is a violation of natural justice.
+      </p>
+
+      <p>
+        Internal Electricity Department targets, policies, or executive circulars cannot override constitutional protections or Parliamentary statutes. Electricity disconnection, or forced-installation threats, cannot be issued by the smart meters installation team or by EDG — they violate the Electricity Act and the Consumer Protection Act, 2019. <strong>Such lawless behaviour must stop.</strong>
+      </p>
+
+      <p>
+        When a consumer's electricity is prematurely cut off due to exhausted prepaid units (often caused by faulty over-billing), and they go to EDG to dispute it, they are told to <strong>pay the faulty amount first</strong> and only then will supply be restored. This can have disastrous consequences for people on life-support systems, those who work from home, households running pumps to fill overhead tanks, and children studying in the evening for exams. It is a clear malpractice — and violates <strong>Section 61 of the Electricity Act</strong>, which mandates that the SERC must balance the interests of the consumer with those of the supplier and the State.
+      </p>
+
+      <h2>Consumer rights and the law of the land</h2>
+
+      <p>
+        The <strong>Electricity (Rights of Consumers) Rules, 2020</strong> give consumers the right to choose the type of electricity meter installed at their premises. If their present electronic meter is faulty, the consumer is free to install any approved electronic meter in its place. By installing prepaid smart meters against the wishes of consumers, often in their absence, EDG and M/s Digi Smart Network Pvt. Ltd. are violating these provisions — as well as Article 21 of the Indian Constitution.
+      </p>
+
+      <p>
+        Section 171 of the Electricity Act and Supply Code 8.2 and 8.3 require the smart-meter installation team to give each consumer prior intimation of the date and time of visit, and to wait for the consumer's agreement before replacing the meter. <strong>If you do not want a smart meter</strong>, when Digi Smart personnel arrive without your permission:
+      </p>
+
+      <ul>
+        <li>Tell them you do not agree to replace your meter with a smart meter;</li>
+        <li>Tell them they are committing illegal acts by violating Sections 47(5), 55, 61 of the Electricity Act, 2003, and Article 21 of the Indian Constitution;</li>
+        <li>Tell them you will file an FIR against them;</li>
+        <li>Start a video recording immediately, for the purpose of an FIR against trespassing, illegal removal-and-replacement of meter without consent, preparation of false documents, and criminal breach of trust;</li>
+        <li>If they come with the police, ask the police for the Departmental Order specifying under which section they are assisting the smart-meter team. <strong>Section 353 IPC (obstructing a public servant) does not apply</strong>, because installing a smart meter is a private act for a private consumer;</li>
+        <li>If the police do not back off and go away with the installation team, go to the Police Station, obtain the Station Diary and other relevant documents under which the police were ordered to your premises, and <strong>register an FIR against the Station Officer and Police Inspector</strong> of the station.</li>
+      </ul>
+
+      <p>
+        <strong>The smart meter company cannot overrule any provision of the Electricity Act, 2003.</strong>
+      </p>
+
+      <p>
+        <strong>Building societies</strong> have permission to do maintenance activities on the building — but they are <em>not the consumer</em> in the case of your electricity meter. They have no right to give any permission or NOC for replacement of your meter. You can file an FIR and a lawsuit against the Society for acting illegally on your behalf.
+      </p>
+
+      <p>
+        <strong>No Government Resolution issued on or after 1 April 2026 can override Sections 47(5), 53, 55, 61, and 171 of the Electricity Act, 2003.</strong>
+      </p>
+
+      <h2>The RTI replies — and what EDG has not told the public</h2>
+
+      <p>
+        In reply to RTI questions from the Smart Meters Naka Team, Goa, regarding the cost-benefit analysis of smart meters, EDG submitted only 2 pages of a letter from REC Ltd to the Power Secretary of Goa giving a partial breakup of the ₹890 crore project cost. The following questions remain unanswered:
+      </p>
+
+      <ul>
+        <li>What money will EDG save by removing meter-reading personnel?</li>
+        <li>How much will EDG save by reducing transmission losses — and from the current 9%, to what level?</li>
+        <li>How much have other Electricity Departments actually reduced their transmission losses to, after installing smart meters?</li>
+        <li>What is the loss incurred by destroying 7.5 lakh existing electronic meters?</li>
+        <li>What are the financial costs of safe disposal of those existing meters?</li>
+        <li>How much of the cost savings will be passed on to consumers as reduced per-unit charges? (Section 61 requires the SERC to balance consumer interest with State interest — yet most smart-meter consumers across India are receiving substantially <strong>higher</strong> bills than before, for the same consumption.)</li>
+        <li>What is the compensation scheme for the meter-reading personnel who will lose their jobs? VRS? At what cost? How will EDG recover this loss?</li>
+      </ul>
+
+      <p>
+        If the project is a loss-making venture, then why proceed with it?
+      </p>
+
+      <h2>The PPP structure — and who is finally responsible</h2>
+
+      <p>
+        Smart meters appear to be another scam of the PPP venture model — Governments offloading their responsibility to citizens for the safe and economical supply of power. In cities like Mumbai, the State has given the power supply itself to Adani, Tata Power, and other agencies; the manufacturer of the smart meter is some other company, untested and unapproved by the State Metrology Department; the installation and maintenance is done by a third agency. <strong>Liability is spread across three or four different private companies</strong>, any one of which can change its policies at any time, increase rates to benefit shareholders, push a software update like a mobile-phone OS, and pass on every cost to the State and the taxpayer.
+      </p>
+
+      <p>
+        We the people do not agree to chase three or four different private agencies through the courts to vindicate what is, constitutionally, an essential service obligation of the State. The State is the constitutional duty-bearer; the consumer is entitled to deal with the State, and to hold the State responsible.
+      </p>
+
+      <h2>The bigger picture — Smart City, Social Credit, and Sovereignty</h2>
+
+      <p>
+        Smart meters are part of the Smart City scheme — itself part of a global agenda that wants to treat every person like a criminal by tracking and tracing all their activities, to "punish" them for a higher carbon footprint. The same agenda includes face-recognition tracking everywhere, RFID tracking at traffic signals, and a social-credit-score system. With a low score, the State could limit, through the Central Bank Digital Currency already launched in India, how much petrol you buy, how much meat and fish you may buy per week, or how much electricity you may use daily. Through a smart meter, the State could remotely reduce your electricity supply — or cut it altogether — for some "violation" of its policies, just as Canada froze the bank accounts of truck drivers who protested.
+      </p>
+
+      <p>
+        <strong>Indians reject the One-World-Government plan and its track-and-trace-and-control technologies.</strong> We reserve our right to remain a Sovereign Nation where democracy is of the people, by the people, and for the people — and where we decide which policies and technologies are safe and beneficial for us.
+      </p>
+
+      <h2>What we are asking for</h2>
+
+      <p>
+        Why has the smart meters project been launched without consultation with the public — especially since it is a remote-communication device installed inside our homes? Why has due process not been followed? Why have so many laws and safety checks been bypassed in the rush to install smart meters when there are so many technical problems with them?
+      </p>
+
+      <p>
+        The public must demand that joint consultations with the public be held <strong>immediately in every State and at the national level</strong> before any further rollout. Otherwise we will have no option but to file Public Interest Litigations.
+      </p>
+
+      <p>
+        EDG has given the work of replacing our electricity meters with smart meters to M/s Digi Smart Network Pvt. Ltd. <strong>If you are against having a smart meter</strong>, when Digi Smart personnel arrive to do the survey:
+      </p>
+
+      <ul>
+        <li>Note the name, number and designation of every person who attends;</li>
+        <li>Tell them to note in their system that you are refusing the smart meter — whether prepaid or postpaid — because you have the right to reject it under <strong>Sections 47(5), 53, 55, 56, 61 and 171 of the Electricity Act, 2003, and Article 21 of the Indian Constitution</strong>;</li>
+        <li>Issue them the same "No Consent" letter you have sent to the Chief Electrical Engineer of EDG or to the EDG official of your district.</li>
+      </ul>
+
+      <p>
+        Why has the Electricity Department of Goa not solved Goa's decades-old problem of 4-5 daily power cuts in many places before launching this initiative? <strong>Goans demand that the bigger daily power problems be solved before any of these fancy, harmful, and totally unnecessary global "Smart" systems are imposed.</strong>
+      </p>
+
+      <h2>Learn more — documentaries and videos</h2>
+
+      <ul>
+        <li><a href="https://youtube.com/watch?v=8ZTiT9ZSg3Q" target="_blank" rel="noopener"><em>Take Back Your Power</em> (2017)</a> — full-length documentary on US citizens' court win against smart meters.</li>
+        <li><a href="https://youtu.be/GDUWoJEBBzg" target="_blank" rel="noopener">The Dangers of Smart Meters</a></li>
+        <li><a href="https://youtu.be/MrtzawH-HCc" target="_blank" rel="noopener">The Effects of Smart Meters on Your Health</a></li>
+        <li><a href="https://x.com/awakenindiamvmt/status/1906250837371883553" target="_blank" rel="noopener">Smart Meters are a Scam</a> (Awaken India Movement)</li>
+      </ul>
+
+      <hr/>
+
+      <p class="text-sm text-gray-500 dark:text-gray-500">
+        <em>This document is a living submission. New points will be added as new evidence and developments come to light. For the full legal petition (with peer-reviewed scientific citations, Indian statutory authorities, judicial precedents, international comparators, and an audit-cleared accuracy log), <a href={url('/posts/comprehensive-review-of-smart-meters-in-goa')}>see here</a>.</em>
+      </p>
+
+    </div>
+
+    <!-- Share buttons (bottom) -->
+    <section class="mt-12 sm:mt-16 mb-6 sm:mb-8" aria-label="Share this page">
+      <div class="text-center mb-4">
+        <p class="text-base sm:text-lg font-semibold mb-1">Found this useful?</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Share with your neighbours, society WhatsApp groups, your MLA, and your residents' association.</p>
+      </div>
+      <div class="flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-sm">
+        <a href={`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" class="share-btn share-whatsapp">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+          <span class="hidden sm:inline">WhatsApp</span>
+        </a>
+        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on X/Twitter" class="share-btn share-twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span class="hidden sm:inline">X</span>
+        </a>
+        <a href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Telegram" class="share-btn share-telegram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          <span class="hidden sm:inline">Telegram</span>
+        </a>
+        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" class="share-btn share-facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span class="hidden sm:inline">Facebook</span>
+        </a>
+        <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" class="share-btn share-linkedin">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.063 2.063 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          <span class="hidden sm:inline">LinkedIn</span>
+        </a>
+        <a href={`mailto:?subject=${encodeURIComponent(pageTitle)}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`} aria-label="Share by email" class="share-btn share-email">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          <span class="hidden sm:inline">Email</span>
+        </a>
+        <button id="copy-link-btn-2" type="button" aria-label="Copy link" class="share-btn share-copy">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span class="hidden sm:inline" id="copy-link-label-2">Copy link</span>
+        </button>
+      </div>
     </section>
-  </div>
+
+    <hr class="border-gray-200 dark:border-gray-800 my-8 sm:my-12" />
+
+    <!-- Comments section: live, no-login, name + comment only (Firebase Firestore backed) -->
+    <Comments pageId="goa-pros-cons-home" />
+
+  </article>
+
+  <script is:inline>
+    function bindCopyButton(btnId, labelId) {
+      var btn = document.getElementById(btnId);
+      var label = document.getElementById(labelId);
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var url = window.location.origin + window.location.pathname;
+        navigator.clipboard.writeText(url).then(function () {
+          if (label) {
+            var prev = label.textContent;
+            label.textContent = 'Copied!';
+            setTimeout(function () { label.textContent = prev; }, 1800);
+          }
+        });
+      });
+    }
+    bindCopyButton('copy-link-btn', 'copy-link-label');
+    bindCopyButton('copy-link-btn-2', 'copy-link-label-2');
+    document.addEventListener('astro:after-swap', function () {
+      bindCopyButton('copy-link-btn', 'copy-link-label');
+      bindCopyButton('copy-link-btn-2', 'copy-link-label-2');
+    });
+  </script>
 </BaseLayout>

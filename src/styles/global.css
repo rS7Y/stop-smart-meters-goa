@@ -441,3 +441,104 @@
 ::view-transition-new(root) {
   animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both fade-in;
 }
+
+/* Share buttons */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 9999px;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+}
+@media (min-width: 640px) {
+  .share-btn {
+    padding: 0.6rem 1rem;
+  }
+}
+.share-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+:where(.dark) .share-btn {
+  background-color: #18181b;
+  color: #f4f4f5;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+:where(.dark) .share-btn:hover {
+  background-color: #27272a;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+.share-whatsapp:hover { background-color: #25D366; color: white; }
+.share-twitter:hover { background-color: #000; color: white; }
+.share-telegram:hover { background-color: #229ED9; color: white; }
+.share-facebook:hover { background-color: #1877F2; color: white; }
+.share-linkedin:hover { background-color: #0A66C2; color: white; }
+.share-email:hover { background-color: #ef4444; color: white; }
+.share-copy:hover { background-color: #4b5563; color: white; }
+:where(.dark) .share-whatsapp:hover { background-color: #25D366; color: white; }
+:where(.dark) .share-twitter:hover { background-color: #fff; color: black; }
+:where(.dark) .share-telegram:hover { background-color: #229ED9; color: white; }
+:where(.dark) .share-facebook:hover { background-color: #1877F2; color: white; }
+:where(.dark) .share-linkedin:hover { background-color: #0A66C2; color: white; }
+:where(.dark) .share-email:hover { background-color: #ef4444; color: white; }
+:where(.dark) .share-copy:hover { background-color: #9ca3af; color: black; }
+
+/* Lead paragraph */
+.prose .lead {
+  color: #1f2937;
+  font-weight: 500;
+}
+:where(.dark) .prose .lead {
+  color: #f3f4f6;
+}
+
+/* Cusdis comment thread - make it readable in both themes */
+#cusdis_thread iframe {
+  width: 100% !important;
+  background-color: transparent !important;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+:where(.dark) #cusdis_thread iframe {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Comment form submit button */
+.comment-submit-btn {
+  background-color: #111827;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  white-space: nowrap;
+}
+.comment-submit-btn:hover {
+  background-color: #000;
+  transform: translateY(-1px);
+}
+:where(.dark) .comment-submit-btn {
+  background-color: white;
+  color: black;
+}
+:where(.dark) .comment-submit-btn:hover {
+  background-color: #f3f4f6;
+}
+
+/* Hide the email-fallback form if Cusdis successfully renders an iframe */
+#cusdis_thread:has(iframe) + #email-comment-form {
+  display: none;
+}
