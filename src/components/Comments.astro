@@ -1,228 +1,217 @@
 ---
-import { firebaseConfig, commentsConfigured } from '../config/comments';
+// Static, no-backend comment section.
+//
+// HOW IT WORKS
+// ──────────────────────────────────────────────────────────────────────
+//   • Approved comments live in src/data/comments.json (just a JSON
+//     array of {name, date, text} entries). They're imported at build
+//     time and rendered as static HTML — fast, no runtime dependency.
+//   • Visitors submit via formsubmit.co (https://formsubmit.co), a free
+//     service that needs zero signup. The first time someone submits
+//     a comment, the admin gets a one-time confirmation email — click
+//     the link once and all future submissions go straight to the
+//     admin's inbox.
+//   • Admin reviews each submission. To publish: add a new entry to
+//     src/data/comments.json, commit, push. The site auto-redeploys
+//     within ~30 seconds and the comment appears.
+//
+// Why this is better than Firebase here:
+//   – No external service to sign up for or wire keys into
+//   – Spam-resistant by default (every comment passes through a human)
+//   – Comments are version-controlled and auditable in the repo
+//   – Site stays a pure static site, fully portable
+// ──────────────────────────────────────────────────────────────────────
 
-interface Props {
-  // A stable identifier used to group comments belonging to this page.
-  // Keep it the same forever so existing comments stay attached to the page.
-  pageId: string;
+import commentsData from '../data/comments.json';
+
+interface CommentEntry {
+  name: string;
+  date: string; // ISO date string
+  text: string;
 }
 
-const { pageId } = Astro.props;
+interface Props {
+  pageId: string;
+  // The admin email that receives new submissions via formsubmit.co.
+  // Substitute your own before going wide if needed.
+  submitTo?: string;
+}
+
+const { pageId, submitTo = 'rustyvz.v@gmail.com' } = Astro.props;
+
+// Allow comments.json to either be a flat array (page-agnostic) or an
+// object keyed by pageId. This keeps it future-proof for multiple pages
+// while staying trivial in the simple case.
+const allComments = commentsData as unknown;
+let entries: CommentEntry[] = [];
+if (Array.isArray(allComments)) {
+  entries = allComments as CommentEntry[];
+} else if (allComments && typeof allComments === 'object') {
+  const byPage = allComments as Record<string, CommentEntry[]>;
+  entries = byPage[pageId] || [];
+}
+
+// Newest first
+entries = [...entries].sort((a, b) =>
+  new Date(b.date).valueOf() - new Date(a.date).valueOf()
+);
+
+const formAction = `https://formsubmit.co/${submitTo}`;
+const formId = `comment-form-${pageId}`;
+const statusId = `comment-status-${pageId}`;
+
+function formatDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(d);
+  } catch {
+    return iso;
+  }
+}
 ---
 
 <section
-  class="comments mt-16 pt-10 border-t border-gray-200 dark:border-gray-800"
-  data-page-id={pageId}
+  class="comments mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-gray-200 dark:border-gray-800"
   aria-label="Comments"
+  data-page-id={pageId}
 >
-  <h2 class="text-3xl font-semibold mb-6">Comments</h2>
+  <h2 class="text-2xl sm:text-3xl font-bold mb-2">Add your voice</h2>
+  <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6">
+    No login required — just your name and your comment. Comments are reviewed before they appear publicly to keep the discussion useful and spam-free.
+  </p>
 
-  <form class="comment-form space-y-4 mb-10" novalidate>
+  <form
+    id={formId}
+    class="comment-form space-y-4 mb-10 p-5 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40"
+    action={formAction}
+    method="POST"
+    novalidate
+  >
+    <!-- formsubmit.co configuration: no captcha (we'll moderate),
+         redirect back to the page, friendly subject line. -->
+    <input type="hidden" name="_subject" value={`New comment on Stop Smart Meters Goa (${pageId})`} />
+    <input type="hidden" name="_captcha" value="false" />
+    <input type="hidden" name="_template" value="table" />
+    <input type="hidden" name="page_id" value={pageId} />
+    <!-- Honeypot for bots — humans never fill this. -->
+    <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" aria-hidden="true" />
+
     <div>
-      <label class="block text-sm font-medium mb-1" for={`c-name-${pageId}`}>Name</label>
+      <label class="block text-sm font-medium mb-1.5" for={`c-name-${pageId}`}>Your name</label>
       <input
         id={`c-name-${pageId}`}
         name="name"
         type="text"
         maxlength="80"
         required
-        placeholder="Your name"
-        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
+        placeholder="e.g. Maria Fernandes, Panaji"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
       />
     </div>
+
     <div>
-      <label class="block text-sm font-medium mb-1" for={`c-text-${pageId}`}>Comment</label>
+      <label class="block text-sm font-medium mb-1.5" for={`c-text-${pageId}`}>Your comment</label>
       <textarea
         id={`c-text-${pageId}`}
-        name="text"
+        name="comment"
         rows="4"
         maxlength="3000"
         required
-        placeholder="Share your thoughts…"
-        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
+        placeholder="Add your perspective, evidence, or concerns…"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-black px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500 resize-y"
       ></textarea>
     </div>
-    <div class="flex items-center gap-4">
-      <button
-        type="submit"
-        class="comment-submit btn-primary tracking-wide no-underline hover:no-underline disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-100"
-      >
-        Post comment
-      </button>
-      <p class="comment-status text-sm text-gray-600 dark:text-gray-400" role="status" aria-live="polite"></p>
+
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+      <p class="text-xs text-gray-500 dark:text-gray-500 leading-relaxed">
+        Comments are usually published within 24 hours after review.
+      </p>
+      <button type="submit" class="comment-submit-btn">Post comment</button>
     </div>
+    <p id={statusId} class="comment-status text-sm" role="status" aria-live="polite"></p>
   </form>
 
-  <div class="comment-list space-y-6">
-    <p class="comment-empty text-gray-500 dark:text-gray-400">Loading comments…</p>
-  </div>
+  <h3 class="text-lg sm:text-xl font-semibold mb-4">
+    {entries.length === 0 ? 'No comments yet' : `${entries.length} comment${entries.length === 1 ? '' : 's'}`}
+  </h3>
+
+  {entries.length === 0 ? (
+    <p class="text-gray-500 dark:text-gray-400">Be the first to share your perspective. After review, your comment will appear here.</p>
+  ) : (
+    <ol class="comment-list space-y-6" role="list">
+      {entries.map((c) => (
+        <li class="border-b border-gray-100 dark:border-gray-800 pb-5 last:border-0">
+          <div class="flex items-baseline gap-3 mb-1 flex-wrap">
+            <span class="font-semibold text-gray-900 dark:text-gray-100">{c.name}</span>
+            <time class="text-xs text-gray-400 dark:text-gray-500" datetime={c.date}>{formatDate(c.date)}</time>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{c.text}</p>
+        </li>
+      ))}
+    </ol>
+  )}
 </section>
 
-<script define:vars={{ firebaseConfig, commentsConfigured, pageId }}>
-  // The whole comment system runs client-side against Firebase Firestore.
-  // We use astro:page-load so it re-initialises after Astro view transitions.
-  function initComments() {
-    const section = document.querySelector(`.comments[data-page-id="${pageId}"]`);
-    if (!section || section.dataset.initialized === 'true') return;
-    section.dataset.initialized = 'true';
+<script is:inline define:vars={{ formId, statusId }}>
+  // Progressive enhancement: submit the form via fetch so the visitor
+  // gets a friendly inline "thanks" instead of being redirected away to
+  // formsubmit.co. If JS is disabled, the plain HTML form still works
+  // (formsubmit.co will show its own thank-you page).
+  function bindForm() {
+    const form = document.getElementById(formId);
+    const status = document.getElementById(statusId);
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
 
-    const form = section.querySelector('.comment-form');
-    const nameInput = section.querySelector('input[name="name"]');
-    const textInput = section.querySelector('textarea[name="text"]');
-    const submitBtn = section.querySelector('.comment-submit');
-    const statusEl = section.querySelector('.comment-status');
-    const listEl = section.querySelector('.comment-list');
-
-    const setStatus = (msg, isError) => {
-      statusEl.textContent = msg || '';
-      statusEl.classList.toggle('text-red-600', !!isError);
-      statusEl.classList.toggle('dark:text-red-400', !!isError);
+    const setStatus = (msg, kind) => {
+      if (!status) return;
+      status.textContent = msg || '';
+      status.classList.remove('text-green-600', 'dark:text-green-400', 'text-red-600', 'dark:text-red-400');
+      if (kind === 'ok') status.classList.add('text-green-600', 'dark:text-green-400');
+      else if (kind === 'err') status.classList.add('text-red-600', 'dark:text-red-400');
     };
 
-    // Not configured yet: keep the page working, show a friendly notice.
-    if (!commentsConfigured) {
-      form.querySelectorAll('input, textarea, button').forEach((el) => (el.disabled = true));
-      listEl.innerHTML = '';
-      const notice = document.createElement('p');
-      notice.className = 'text-gray-500 dark:text-gray-400';
-      notice.textContent = 'The comment section is being set up and will be open for posting soon.';
-      listEl.appendChild(notice);
-      return;
-    }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const honey = form.querySelector('input[name="_honey"]');
+      if (honey && honey.value) return; // bot
 
-    const fmtDate = (date) => {
-      try {
-        return new Intl.DateTimeFormat('en-IN', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        }).format(date);
-      } catch {
-        return date.toLocaleString();
-      }
-    };
-
-    const renderComments = (comments) => {
-      listEl.innerHTML = '';
-      if (!comments.length) {
-        const empty = document.createElement('p');
-        empty.className = 'text-gray-500 dark:text-gray-400';
-        empty.textContent = 'No comments yet. Be the first to share your thoughts.';
-        listEl.appendChild(empty);
+      const name = form.querySelector('input[name="name"]').value.trim();
+      const text = form.querySelector('textarea[name="comment"]').value.trim();
+      if (!name || !text) {
+        setStatus('Please enter both your name and a comment.', 'err');
         return;
       }
-      for (const c of comments) {
-        const wrap = document.createElement('div');
-        wrap.className = 'border-b border-gray-100 dark:border-gray-800 pb-5';
 
-        const head = document.createElement('div');
-        head.className = 'flex items-baseline gap-3 mb-1';
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      setStatus('Sending…', null);
 
-        const nameEl = document.createElement('span');
-        nameEl.className = 'font-semibold text-gray-900 dark:text-gray-100';
-        nameEl.textContent = c.name; // textContent => no HTML injection
-
-        const dateEl = document.createElement('span');
-        dateEl.className = 'text-xs text-gray-400 dark:text-gray-500';
-        dateEl.textContent = c.createdAt ? fmtDate(c.createdAt) : '';
-
-        head.appendChild(nameEl);
-        head.appendChild(dateEl);
-
-        const body = document.createElement('p');
-        body.className = 'text-gray-700 dark:text-gray-300 whitespace-pre-wrap';
-        body.textContent = c.text; // textContent => no HTML injection
-
-        wrap.appendChild(head);
-        wrap.appendChild(body);
-        listEl.appendChild(wrap);
-      }
-    };
-
-    (async () => {
       try {
-        const { initializeApp, getApps, getApp } = await import(
-          'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
-        );
-        const {
-          getFirestore,
-          collection,
-          addDoc,
-          query,
-          where,
-          orderBy,
-          onSnapshot,
-          serverTimestamp,
-        } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-
-        const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const commentsRef = collection(db, 'comments');
-
-        // Live-updating list of comments for this page, newest first.
-        const q = query(
-          commentsRef,
-          where('pageId', '==', pageId),
-          orderBy('createdAt', 'desc'),
-        );
-        onSnapshot(
-          q,
-          (snap) => {
-            const comments = snap.docs.map((d) => {
-              const data = d.data();
-              return {
-                name: data.name || 'Anonymous',
-                text: data.text || '',
-                createdAt: data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : null,
-              };
-            });
-            renderComments(comments);
-          },
-          (err) => {
-            console.error('Comments load error:', err);
-            listEl.innerHTML = '';
-            const errEl = document.createElement('p');
-            errEl.className = 'text-gray-500 dark:text-gray-400';
-            errEl.textContent = 'Comments could not be loaded right now. Please try again later.';
-            listEl.appendChild(errEl);
-          },
-        );
-
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const name = nameInput.value.trim();
-          const text = textInput.value.trim();
-          if (!name || !text) {
-            setStatus('Please enter both your name and a comment.', true);
-            return;
-          }
-          submitBtn.disabled = true;
-          setStatus('Posting…', false);
-          try {
-            await addDoc(commentsRef, {
-              pageId,
-              name: name.slice(0, 80),
-              text: text.slice(0, 3000),
-              createdAt: serverTimestamp(),
-            });
-            textInput.value = '';
-            setStatus('Thanks! Your comment has been posted.', false);
-          } catch (err) {
-            console.error('Comment post error:', err);
-            setStatus('Sorry, your comment could not be posted. Please try again.', true);
-          } finally {
-            submitBtn.disabled = false;
-          }
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
         });
+        if (res.ok) {
+          form.querySelector('textarea[name="comment"]').value = '';
+          setStatus("Thanks! Your comment has been received and will appear here after review.", 'ok');
+        } else {
+          setStatus('Sorry, we could not send your comment. Please try again in a minute.', 'err');
+        }
       } catch (err) {
-        console.error('Comments init error:', err);
-        listEl.innerHTML = '';
-        const errEl = document.createElement('p');
-        errEl.className = 'text-gray-500 dark:text-gray-400';
-        errEl.textContent = 'Comments are temporarily unavailable.';
-        listEl.appendChild(errEl);
+        setStatus('Network error — please check your connection and try again.', 'err');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
-    })();
+    });
   }
 
-  document.addEventListener('astro:page-load', initComments);
+  bindForm();
+  document.addEventListener('astro:page-load', bindForm);
+  document.addEventListener('astro:after-swap', bindForm);
 </script>
