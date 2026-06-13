@@ -1,0 +1,228 @@
+---
+import { firebaseConfig, commentsConfigured } from '../config/comments';
+
+interface Props {
+  // A stable identifier used to group comments belonging to this page.
+  // Keep it the same forever so existing comments stay attached to the page.
+  pageId: string;
+}
+
+const { pageId } = Astro.props;
+---
+
+<section
+  class="comments mt-16 pt-10 border-t border-gray-200 dark:border-gray-800"
+  data-page-id={pageId}
+  aria-label="Comments"
+>
+  <h2 class="text-3xl font-semibold mb-6">Comments</h2>
+
+  <form class="comment-form space-y-4 mb-10" novalidate>
+    <div>
+      <label class="block text-sm font-medium mb-1" for={`c-name-${pageId}`}>Name</label>
+      <input
+        id={`c-name-${pageId}`}
+        name="name"
+        type="text"
+        maxlength="80"
+        required
+        placeholder="Your name"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
+      />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1" for={`c-text-${pageId}`}>Comment</label>
+      <textarea
+        id={`c-text-${pageId}`}
+        name="text"
+        rows="4"
+        maxlength="3000"
+        required
+        placeholder="Share your thoughts…"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
+      ></textarea>
+    </div>
+    <div class="flex items-center gap-4">
+      <button
+        type="submit"
+        class="comment-submit btn-primary tracking-wide no-underline hover:no-underline disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-100"
+      >
+        Post comment
+      </button>
+      <p class="comment-status text-sm text-gray-600 dark:text-gray-400" role="status" aria-live="polite"></p>
+    </div>
+  </form>
+
+  <div class="comment-list space-y-6">
+    <p class="comment-empty text-gray-500 dark:text-gray-400">Loading comments…</p>
+  </div>
+</section>
+
+<script define:vars={{ firebaseConfig, commentsConfigured, pageId }}>
+  // The whole comment system runs client-side against Firebase Firestore.
+  // We use astro:page-load so it re-initialises after Astro view transitions.
+  function initComments() {
+    const section = document.querySelector(`.comments[data-page-id="${pageId}"]`);
+    if (!section || section.dataset.initialized === 'true') return;
+    section.dataset.initialized = 'true';
+
+    const form = section.querySelector('.comment-form');
+    const nameInput = section.querySelector('input[name="name"]');
+    const textInput = section.querySelector('textarea[name="text"]');
+    const submitBtn = section.querySelector('.comment-submit');
+    const statusEl = section.querySelector('.comment-status');
+    const listEl = section.querySelector('.comment-list');
+
+    const setStatus = (msg, isError) => {
+      statusEl.textContent = msg || '';
+      statusEl.classList.toggle('text-red-600', !!isError);
+      statusEl.classList.toggle('dark:text-red-400', !!isError);
+    };
+
+    // Not configured yet: keep the page working, show a friendly notice.
+    if (!commentsConfigured) {
+      form.querySelectorAll('input, textarea, button').forEach((el) => (el.disabled = true));
+      listEl.innerHTML = '';
+      const notice = document.createElement('p');
+      notice.className = 'text-gray-500 dark:text-gray-400';
+      notice.textContent = 'The comment section is being set up and will be open for posting soon.';
+      listEl.appendChild(notice);
+      return;
+    }
+
+    const fmtDate = (date) => {
+      try {
+        return new Intl.DateTimeFormat('en-IN', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }).format(date);
+      } catch {
+        return date.toLocaleString();
+      }
+    };
+
+    const renderComments = (comments) => {
+      listEl.innerHTML = '';
+      if (!comments.length) {
+        const empty = document.createElement('p');
+        empty.className = 'text-gray-500 dark:text-gray-400';
+        empty.textContent = 'No comments yet. Be the first to share your thoughts.';
+        listEl.appendChild(empty);
+        return;
+      }
+      for (const c of comments) {
+        const wrap = document.createElement('div');
+        wrap.className = 'border-b border-gray-100 dark:border-gray-800 pb-5';
+
+        const head = document.createElement('div');
+        head.className = 'flex items-baseline gap-3 mb-1';
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'font-semibold text-gray-900 dark:text-gray-100';
+        nameEl.textContent = c.name; // textContent => no HTML injection
+
+        const dateEl = document.createElement('span');
+        dateEl.className = 'text-xs text-gray-400 dark:text-gray-500';
+        dateEl.textContent = c.createdAt ? fmtDate(c.createdAt) : '';
+
+        head.appendChild(nameEl);
+        head.appendChild(dateEl);
+
+        const body = document.createElement('p');
+        body.className = 'text-gray-700 dark:text-gray-300 whitespace-pre-wrap';
+        body.textContent = c.text; // textContent => no HTML injection
+
+        wrap.appendChild(head);
+        wrap.appendChild(body);
+        listEl.appendChild(wrap);
+      }
+    };
+
+    (async () => {
+      try {
+        const { initializeApp, getApps, getApp } = await import(
+          'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'
+        );
+        const {
+          getFirestore,
+          collection,
+          addDoc,
+          query,
+          where,
+          orderBy,
+          onSnapshot,
+          serverTimestamp,
+        } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+        const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const commentsRef = collection(db, 'comments');
+
+        // Live-updating list of comments for this page, newest first.
+        const q = query(
+          commentsRef,
+          where('pageId', '==', pageId),
+          orderBy('createdAt', 'desc'),
+        );
+        onSnapshot(
+          q,
+          (snap) => {
+            const comments = snap.docs.map((d) => {
+              const data = d.data();
+              return {
+                name: data.name || 'Anonymous',
+                text: data.text || '',
+                createdAt: data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : null,
+              };
+            });
+            renderComments(comments);
+          },
+          (err) => {
+            console.error('Comments load error:', err);
+            listEl.innerHTML = '';
+            const errEl = document.createElement('p');
+            errEl.className = 'text-gray-500 dark:text-gray-400';
+            errEl.textContent = 'Comments could not be loaded right now. Please try again later.';
+            listEl.appendChild(errEl);
+          },
+        );
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = nameInput.value.trim();
+          const text = textInput.value.trim();
+          if (!name || !text) {
+            setStatus('Please enter both your name and a comment.', true);
+            return;
+          }
+          submitBtn.disabled = true;
+          setStatus('Posting…', false);
+          try {
+            await addDoc(commentsRef, {
+              pageId,
+              name: name.slice(0, 80),
+              text: text.slice(0, 3000),
+              createdAt: serverTimestamp(),
+            });
+            textInput.value = '';
+            setStatus('Thanks! Your comment has been posted.', false);
+          } catch (err) {
+            console.error('Comment post error:', err);
+            setStatus('Sorry, your comment could not be posted. Please try again.', true);
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      } catch (err) {
+        console.error('Comments init error:', err);
+        listEl.innerHTML = '';
+        const errEl = document.createElement('p');
+        errEl.className = 'text-gray-500 dark:text-gray-400';
+        errEl.textContent = 'Comments are temporarily unavailable.';
+        listEl.appendChild(errEl);
+      }
+    })();
+  }
+
+  document.addEventListener('astro:page-load', initComments);
+</script>
